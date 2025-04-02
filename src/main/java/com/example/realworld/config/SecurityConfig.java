@@ -30,7 +30,7 @@ public class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeRequests()
-                .antMatchers("/api/user/register", "/api/user/login").permitAll()
+                .antMatchers("/api/user/register", "/api/user/login", "/api/profiles/**").permitAll()
                 .antMatchers("/api/**").hasRole("USER")
                 .anyRequest().authenticated()
             .and()

@@ -1,6 +1,9 @@
 package com.example.realworld.controller;
 
+import com.example.realworld.dto.LoginResponseDTO.UserResponseDTO;
 import com.example.realworld.dto.RegistrationReqDTO;
+import com.example.realworld.dto.UpdateUserRequestDTO;
+import com.example.realworld.dto.UpdateUserResponseDTO;
 import com.example.realworld.model.User;
 import com.example.realworld.service.UserService;
 import com.example.realworld.repository.UserRepository;
@@ -15,6 +18,7 @@ import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/user")
@@ -68,5 +72,11 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+    }
+
+    @PutMapping()
+    public ResponseEntity<UpdateUserResponseDTO> updateUser(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UpdateUserRequestDTO request) {
+        UpdateUserResponseDTO updatedUser = userService.updateUser(userDetails.getUsername(), request);
+        return ResponseEntity.ok(updatedUser);
     }
 }

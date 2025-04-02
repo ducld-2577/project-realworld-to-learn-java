@@ -1,15 +1,13 @@
 package com.example.realworld.security;
 
 import com.example.realworld.service.JwtService;
-import com.example.realworld.service.UserService;
+import com.example.realworld.service.JwtUserService;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,19 +16,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserService userService;
+    private final JwtUserService jwtUserService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, JwtUserService jwtUserService) {
         this.jwtService = jwtService;
-        this.userService = userService;
+        this.jwtUserService = jwtUserService;
     }
 
     @Override
@@ -41,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && jwtService.validateToken(token)) {
             String email = jwtService.extractEmail(token);
 
-            UserDetails userDetails = userService.loadUserByUsername(email);
+            UserDetails userDetails = jwtUserService.loadUserByUsername(email);
             if (userDetails != null) {
                 Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
                 Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
