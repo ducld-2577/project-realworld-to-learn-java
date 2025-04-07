@@ -12,5 +12,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserFollowRepository extends JpaRepository<UserFollow, UserFollowId> {
     Optional<UserFollow> findByFollowerAndFollowing(User follower, User following);
+    boolean existsByFollowerAndFollowing(User follower, User following);
 }
 

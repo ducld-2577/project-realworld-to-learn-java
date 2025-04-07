@@ -1,10 +1,13 @@
 package com.example.realworld.model;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "Article")
 public class Article {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,6 +27,12 @@ public class Article {
     @JoinColumn(name = "authorId", nullable = false)
     private User author;
 
+    @OneToMany(mappedBy = "id.article")
+    private List<ArticleToTag> articleToTags; // Quan hệ nhiều-nhiều thông qua ArticleTag
+
+    @Transient
+    private List<Tag> tags; // Lưu trữ các tags cho Article
+
     public Article() {}
 
     public Article(String slug, String title, String description, String body, User author) {
@@ -34,6 +43,7 @@ public class Article {
         this.author = author;
     }
 
+    // Getter and Setter methods
     public Long getId() {
         return id;
     }
@@ -96,5 +106,22 @@ public class Article {
 
     public void setAuthor(User author) {
         this.author = author;
+    }
+
+    public List<ArticleToTag> getArticleTags() {
+        return articleToTags;
+    }
+
+    public void setArticleTags(List<ArticleToTag> articleToTags) {
+        this.articleToTags = articleToTags;
+    }
+
+    public List<Tag> getTags() {
+        if (this.articleToTags != null) {
+            this.tags = articleToTags.stream()
+                                    .map(articleTag -> articleTag.getId().getTag())
+                                    .collect(Collectors.toList());
+        }
+        return tags;
     }
 }
