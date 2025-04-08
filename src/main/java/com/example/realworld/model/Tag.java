@@ -1,10 +1,16 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "Tag")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Tag {
 
     @Id
@@ -13,29 +19,10 @@ public class Tag {
 
     private String name;
 
-    @OneToMany(mappedBy = "id.tag")
-    private List<ArticleToTag> articleToTags; // Liên kết với bảng ArticleTag
-
-    public Tag() {}
+    @OneToMany(mappedBy = "tag")
+    private List<ArticleToTag> articleToTags;
 
     public Tag(String name) {
-        this.name = name;
-    }
-
-    // Getter and Setter methods
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 

@@ -1,6 +1,5 @@
 package com.example.realworld.controller;
 
-import com.example.realworld.dto.LoginResponseDTO.UserResponseDTO;
 import com.example.realworld.dto.RegistrationReqDTO;
 import com.example.realworld.dto.UpdateUserRequestDTO;
 import com.example.realworld.dto.UpdateUserResponseDTO;

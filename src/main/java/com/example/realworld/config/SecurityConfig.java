@@ -3,6 +3,7 @@ package com.example.realworld.config;
 import com.example.realworld.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,6 +32,7 @@ public class SecurityConfig {
             .and()
             .authorizeRequests()
                 .antMatchers("/api/user/register", "/api/user/login", "/api/profiles/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles").permitAll()
                 .antMatchers("/api/**").hasRole("USER")
                 .anyRequest().authenticated()
             .and()

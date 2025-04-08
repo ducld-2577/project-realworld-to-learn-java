@@ -1,58 +1,37 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import java.io.Serializable;
 import java.util.Objects;
-
 import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 
 @Embeddable
+@Getter
+@Setter
+@NoArgsConstructor
+@Builder
 public class ArticleTagId implements Serializable {
 
-    @ManyToOne
-    @JoinColumn(name = "articleId", referencedColumnName = "id", insertable = false, updatable = false)
-    private Article article;
+    private Long articleId;
+    private Long tagId;
 
-    @ManyToOne
-    @JoinColumn(name = "tagId", referencedColumnName = "id", insertable = false, updatable = false)
-    private Tag tag;
-
-    public ArticleTagId() {}
-
-    public ArticleTagId(Article article, Tag tag) {
-        this.article = article;
-        this.tag = tag;
-    }
-
-    // Getter and Setter
-    public Article getArticle() {
-        return article;
-    }
-
-    public void setArticle(Article article) {
-        this.article = article;
-    }
-
-    public Tag getTag() {
-        return tag;
-    }
-
-    public void setTag(Tag tag) {
-        this.tag = tag;
+    public ArticleTagId(Long articleId, Long tagId) {
+        this.articleId = articleId;
+        this.tagId = tagId;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ArticleTagId that = (ArticleTagId) o;
-        return Objects.equals(article, that.article) &&
-               Objects.equals(tag, that.tag);
+        return Objects.equals(articleId, that.articleId) && Objects.equals(tagId, that.tagId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(article, tag);
+        return Objects.hash(articleId, tagId);
     }
 }

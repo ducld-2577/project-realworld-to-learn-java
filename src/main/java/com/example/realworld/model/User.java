@@ -4,8 +4,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
@@ -21,6 +26,16 @@ public class User implements UserDetails {
     private String image;
     private String bio;
     private boolean demo;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserFavorite> favorites = new ArrayList<>();
+
+    @Transient
+    public List<Article> getFavoritedArticles() {
+        return favorites.stream()
+                        .map(UserFavorite::getArticle)
+                        .collect(Collectors.toList());
+    }
 
     public User() {}
 

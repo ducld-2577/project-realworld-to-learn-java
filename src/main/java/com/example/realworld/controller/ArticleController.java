@@ -3,6 +3,7 @@ package com.example.realworld.controller;
 import com.example.realworld.dto.ArticleListResponseDTO;
 import com.example.realworld.service.ArticleService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
@@ -23,15 +24,30 @@ public class ArticleController {
             @RequestParam(required = false) String author,
             @RequestParam(required = false) String favorited,
             @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(defaultValue = "0") int offset,
-            Authentication authentication
-    ) {
+            @RequestParam(defaultValue = "0") int offset, Authentication authentication) {
         Optional<String> tagOptional = Optional.ofNullable(tag);
         Optional<String> authorOptional = Optional.ofNullable(author);
         Optional<String> favoritedOptional = Optional.ofNullable(favorited);
 
-        ArticleListResponseDTO response = articleService.getArticles(tagOptional, authorOptional, favoritedOptional, limit, offset, authentication);
+        ArticleListResponseDTO response = articleService.getArticles(tagOptional, authorOptional,
+                favoritedOptional, limit, offset, authentication);
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/feed")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ArticleListResponseDTO> feedArticles(
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String favorited,
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "0") int offset, Authentication authentication) {
+        Optional<String> tagOptional = Optional.ofNullable(tag);
+        Optional<String> authorOptional = Optional.ofNullable(author);
+        Optional<String> favoritedOptional = Optional.ofNullable(favorited);
+
+        ArticleListResponseDTO response = articleService.getFeedArticles(tagOptional,
+                authorOptional, favoritedOptional, limit, offset, authentication);
+        return ResponseEntity.ok(response);
+    }
 }

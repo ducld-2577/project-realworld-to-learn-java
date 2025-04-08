@@ -1,9 +1,15 @@
 package com.example.realworld.model;
 
 import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "_UserFollows")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserFollow {
 
     @EmbeddedId
