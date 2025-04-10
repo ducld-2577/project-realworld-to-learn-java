@@ -1,5 +1,6 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import javax.persistence.*;
 import lombok.*;
 
@@ -24,29 +25,5 @@ public class UserFollow {
     @MapsId("followingId")
     @JoinColumn(name = "following_id")
     private User following;
-
-    public UserFollowId getId() {
-        return id;
-    }
-
-    public void setId(UserFollowId id) {
-        this.id = id;
-    }
-
-    public User getFollower() {
-        return follower;
-    }
-
-    public void setFollower(User follower) {
-        this.follower = follower;
-    }
-
-    public User getFollowing() {
-        return following;
-    }
-
-    public void setFollowing(User following) {
-        this.following = following;
-    }
 }
 
