@@ -99,6 +99,7 @@ public class ArticleService {
         return convertToDTO(article, currentUser);
     }
 
+    @Transactional
     public ArticleDTO createArticle(ArticleDTO articleDTO, Authentication authentication) {
         User currentUser = userRepository.findByUsername(authentication.getName()).orElse(null);
         if (currentUser == null) {
