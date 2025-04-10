@@ -2,6 +2,7 @@ package com.example.realworld.model;
 
 import javax.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,19 +25,29 @@ public class Article {
     private String description;
     private String body;
 
-    @Column(name = "createdAt", columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private String createdAt;
+    @Column(name = "createdAt", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "updatedAt",
-            columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private String updatedAt;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @Column(name = "updatedAt", nullable = false, updatable = false)
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @ManyToOne
     @JoinColumn(name = "authorId", nullable = false)
     private User author;
 
-    @OneToMany(mappedBy = "article")
-    private List<ArticleToTag> articleToTags;
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArticleToTag> articleToTags = new ArrayList<>();
 
     @Transient
     private List<Tag> tags;

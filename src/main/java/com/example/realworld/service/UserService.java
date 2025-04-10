@@ -10,10 +10,11 @@ import com.example.realworld.repository.UserFollowRepository;
 import com.example.realworld.repository.UserRepository;
 import java.util.Optional;
 import javax.transaction.Transactional;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
@@ -22,7 +23,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserFollowRepository userFollowRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserFollowRepository userFollowRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            UserFollowRepository userFollowRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userFollowRepository = userFollowRepository;
@@ -37,7 +39,7 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByUsername(currentUsername);
 
         if (!optionalUser.isPresent()) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         User user = optionalUser.get();
@@ -62,31 +64,23 @@ public class UserService {
         userRepository.save(user);
 
         UpdateUserResponseDTO.UserDTO responseUser = new UpdateUserResponseDTO.UserDTO(
-                user.getEmail(),
-                user.getUsername(),
-                user.getBio(),
-                user.getImage()
-        );
+                user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
 
         return new UpdateUserResponseDTO(responseUser);
     }
 
-     public ProfileResponseDTO getUserProfile(String username, Authentication authentication) {
+    public ProfileResponseDTO getUserProfile(String username, Authentication authentication) {
         Optional<User> targetUserOpt = userRepository.findByUsername(username);
-        
+
         if (targetUserOpt.isEmpty()) {
             return null;
         }
-        
+
         User targetUser = targetUserOpt.get();
         boolean isFollowing = false;
 
-        return new ProfileResponseDTO(
-                targetUser.getUsername(),
-                targetUser.getBio(),
-                targetUser.getImage(),
-                isFollowing
-        );
+        return new ProfileResponseDTO(targetUser.getUsername(), targetUser.getBio(),
+                targetUser.getImage(), isFollowing);
     }
 
     public ProfileResponseDTO followUser(String usernameToFollow, Authentication authentication) {
@@ -95,17 +89,18 @@ public class UserService {
         Optional<User> targetUserOpt = userRepository.findByUsername(usernameToFollow);
 
         if (currentUserOpt.isEmpty() || targetUserOpt.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         User currentUser = currentUserOpt.get();
         User targetUser = targetUserOpt.get();
 
-        Optional<UserFollow> existingFollow = userFollowRepository
-                .findByFollowerAndFollowing(currentUser, targetUser);
+        Optional<UserFollow> existingFollow =
+                userFollowRepository.findByFollowerAndFollowing(currentUser, targetUser);
 
         if (existingFollow.isPresent()) {
-            throw new RuntimeException("Already following this user");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Already following this user");
         }
 
         UserFollowId userFollowId = new UserFollowId(currentUser.getId(), targetUser.getId());
@@ -115,12 +110,8 @@ public class UserService {
         follow.setFollowing(targetUser);
         userFollowRepository.save(follow);
 
-        return new ProfileResponseDTO(
-                targetUser.getUsername(),
-                targetUser.getBio(),
-                targetUser.getImage(),
-                true
-        );
+        return new ProfileResponseDTO(targetUser.getUsername(), targetUser.getBio(),
+                targetUser.getImage(), true);
     }
 
     public ProfileResponseDTO unfollowUser(String username, Authentication authentication) {
@@ -128,7 +119,7 @@ public class UserService {
         Optional<User> targetUser = userRepository.findByUsername(username);
 
         if (targetUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         UserFollowId userFollowId = new UserFollowId(currentUser.getId(), targetUser.get().getId());
@@ -139,11 +130,7 @@ public class UserService {
             return null;
         }
 
-        return new ProfileResponseDTO(
-                targetUser.get().getUsername(),
-                targetUser.get().getBio(),
-                targetUser.get().getImage(),
-                false
-        );
+        return new ProfileResponseDTO(targetUser.get().getUsername(), targetUser.get().getBio(),
+                targetUser.get().getImage(), false);
     }
 }

@@ -26,17 +26,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-                .antMatchers("/api/user/register", "/api/user/login", "/api/profiles/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/articles").permitAll()
-                .antMatchers("/api/**").hasRole("USER")
-                .anyRequest().authenticated()
-            .and()
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.csrf().disable().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
+                .antMatchers("/api/user/register", "/api/user/login", "/api/profiles/**")
+                .permitAll().antMatchers(HttpMethod.GET, "/api/articles").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll().antMatchers("/api/**")
+                .hasRole("USER").anyRequest().authenticated().and().addFilterBefore(
+                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -47,7 +43,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
         return authConfig.getAuthenticationManager();
     }
 }
