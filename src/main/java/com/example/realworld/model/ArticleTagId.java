@@ -1,8 +1,8 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import java.io.Serializable;
 import java.util.Objects;
-import lombok.*;
 import javax.persistence.Embeddable;
 
 @Embeddable
@@ -10,14 +10,14 @@ import javax.persistence.Embeddable;
 @Setter
 @NoArgsConstructor
 @Builder
-public class UserFavoritesId implements Serializable {
+public class ArticleTagId implements Serializable {
 
-    private Long userId;
     private Long articleId;
+    private Long tagId;
 
-    public UserFavoritesId(Long userId, Long articleId) {
-        this.userId = userId;
+    public ArticleTagId(Long articleId, Long tagId) {
         this.articleId = articleId;
+        this.tagId = tagId;
     }
 
     @Override
@@ -26,12 +26,12 @@ public class UserFavoritesId implements Serializable {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        UserFavoritesId that = (UserFavoritesId) o;
-        return Objects.equals(userId, that.userId) && Objects.equals(articleId, that.articleId);
+        ArticleTagId that = (ArticleTagId) o;
+        return Objects.equals(articleId, that.articleId) && Objects.equals(tagId, that.tagId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, articleId);
+        return Objects.hash(articleId, tagId);
     }
 }

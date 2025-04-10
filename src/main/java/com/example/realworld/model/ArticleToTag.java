@@ -1,50 +1,49 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import javax.persistence.*;
 
 @Entity
 @Table(name = "_ArticleToTag")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ArticleToTag {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
+    @EmbeddedId
+    private ArticleTagId id;
 
     @ManyToOne
-    @JoinColumn(name = "A", nullable = false)
+    @MapsId("articleId")
+    @JoinColumn(name = "article_id")
     private Article article;
 
     @ManyToOne
-    @JoinColumn(name = "B", nullable = false)
+    @MapsId("tagId")
+    @JoinColumn(name = "tag_id")
     private Tag tag;
-
-    public ArticleToTag() {}
 
     public ArticleToTag(Article article, Tag tag) {
         this.article = article;
         this.tag = tag;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+        this.id = new ArticleTagId(article.getId(), tag.getId());
     }
 
     public Article getArticle() {
         return article;
     }
 
-    public void setArticle(Article article) {
-        this.article = article;
-    }
-
     public Tag getTag() {
         return tag;
     }
 
-    public void setTag(Tag tag) {
-        this.tag = tag;
+    public ArticleTagId getId() {
+        return id;
+    }
+
+    public void setId(ArticleTagId id) {
+        this.id = id;
     }
 }

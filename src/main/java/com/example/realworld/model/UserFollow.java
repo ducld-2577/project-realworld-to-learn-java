@@ -2,6 +2,7 @@ package com.example.realworld.model;
 
 import lombok.*;
 import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "_UserFollows")

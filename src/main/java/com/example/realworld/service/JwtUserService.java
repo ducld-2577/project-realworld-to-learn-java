@@ -1,6 +1,5 @@
 package com.example.realworld.service;
 
-import com.example.realworld.model.User;
 import com.example.realworld.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
