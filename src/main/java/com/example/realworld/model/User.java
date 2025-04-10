@@ -1,5 +1,6 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -10,6 +11,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
 @Table(name = "User")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,73 +27,6 @@ public class User implements UserDetails {
     private String image;
     private String bio;
     private boolean demo;
-
-    public User() {}
-
-    public User(String email, String username, String password, String image, String bio, boolean demo) {
-        this.email = email;
-        this.username = username;
-        this.password = password;
-        this.image = image;
-        this.bio = bio;
-        this.demo = demo;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public boolean isDemo() {
-        return demo;
-    }
-
-    public void setDemo(boolean demo) {
-        this.demo = demo;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

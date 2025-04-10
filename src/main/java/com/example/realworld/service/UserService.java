@@ -1,6 +1,7 @@
 package com.example.realworld.service;
 
 import com.example.realworld.dto.ProfileResponseDTO;
+import com.example.realworld.dto.RegistrationReqDTO;
 import com.example.realworld.dto.UpdateUserRequestDTO;
 import com.example.realworld.dto.UpdateUserResponseDTO;
 import com.example.realworld.model.User;
@@ -8,10 +9,14 @@ import com.example.realworld.model.UserFollow;
 import com.example.realworld.model.UserFollowId;
 import com.example.realworld.repository.UserFollowRepository;
 import com.example.realworld.repository.UserRepository;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.transaction.Transactional;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,14 +27,22 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserFollowRepository userFollowRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserFollowRepository userFollowRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            UserFollowRepository userFollowRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userFollowRepository = userFollowRepository;
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public User saveUser(RegistrationReqDTO registrationReqDto) {
+        String encodedPassword = passwordEncoder.encode(registrationReqDto.getPassword());
+
+        User newUser = new User();
+        newUser.setEmail(registrationReqDto.getEmail());
+        newUser.setUsername(registrationReqDto.getUsername());
+        newUser.setPassword(encodedPassword);
+
+        return userRepository.save(newUser);
     }
 
     @Transactional
@@ -62,31 +75,23 @@ public class UserService {
         userRepository.save(user);
 
         UpdateUserResponseDTO.UserDTO responseUser = new UpdateUserResponseDTO.UserDTO(
-                user.getEmail(),
-                user.getUsername(),
-                user.getBio(),
-                user.getImage()
-        );
+                user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
 
         return new UpdateUserResponseDTO(responseUser);
     }
 
-     public ProfileResponseDTO getUserProfile(String username, Authentication authentication) {
+    public ProfileResponseDTO getUserProfile(String username, Authentication authentication) {
         Optional<User> targetUserOpt = userRepository.findByUsername(username);
-        
+
         if (targetUserOpt.isEmpty()) {
             return null;
         }
-        
+
         User targetUser = targetUserOpt.get();
         boolean isFollowing = false;
 
-        return new ProfileResponseDTO(
-                targetUser.getUsername(),
-                targetUser.getBio(),
-                targetUser.getImage(),
-                isFollowing
-        );
+        return new ProfileResponseDTO(targetUser.getUsername(), targetUser.getBio(),
+                targetUser.getImage(), isFollowing);
     }
 
     public ProfileResponseDTO followUser(String usernameToFollow, Authentication authentication) {
@@ -101,8 +106,8 @@ public class UserService {
         User currentUser = currentUserOpt.get();
         User targetUser = targetUserOpt.get();
 
-        Optional<UserFollow> existingFollow = userFollowRepository
-                .findByFollowerAndFollowing(currentUser, targetUser);
+        Optional<UserFollow> existingFollow =
+                userFollowRepository.findByFollowerAndFollowing(currentUser, targetUser);
 
         if (existingFollow.isPresent()) {
             throw new RuntimeException("Already following this user");
@@ -115,12 +120,8 @@ public class UserService {
         follow.setFollowing(targetUser);
         userFollowRepository.save(follow);
 
-        return new ProfileResponseDTO(
-                targetUser.getUsername(),
-                targetUser.getBio(),
-                targetUser.getImage(),
-                true
-        );
+        return new ProfileResponseDTO(targetUser.getUsername(), targetUser.getBio(),
+                targetUser.getImage(), true);
     }
 
     public ProfileResponseDTO unfollowUser(String username, Authentication authentication) {
@@ -139,11 +140,33 @@ public class UserService {
             return null;
         }
 
-        return new ProfileResponseDTO(
-                targetUser.get().getUsername(),
-                targetUser.get().getBio(),
-                targetUser.get().getImage(),
-                false
-        );
+        return new ProfileResponseDTO(targetUser.get().getUsername(), targetUser.get().getBio(),
+                targetUser.get().getImage(), false);
+    }
+
+    public ResponseEntity<Map<String, Object>> getCurrentUserResponse(UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<User> userOptional = userRepository.findByUsername(userDetails.getUsername());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> userData = new HashMap<>();
+
+            userData.put("email", user.getEmail());
+            userData.put("username", user.getUsername());
+            userData.put("bio", user.getBio());
+            userData.put("image", user.getImage());
+
+            response.put("user", userData);
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 }
