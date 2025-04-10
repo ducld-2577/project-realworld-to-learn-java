@@ -30,7 +30,8 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/api/user/register", "/api/user/login").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/articles").permitAll().antMatchers("/api/**")
+                .antMatchers(HttpMethod.GET, "/api/articles").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll().antMatchers("/api/**")
                 .hasRole("USER").anyRequest().authenticated().and().addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
@@ -50,7 +51,7 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByUsername(currentUsername);
 
         if (!optionalUser.isPresent()) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         User user = optionalUser.get();
@@ -100,7 +101,7 @@ public class UserService {
         Optional<User> targetUserOpt = userRepository.findByUsername(usernameToFollow);
 
         if (currentUserOpt.isEmpty() || targetUserOpt.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         User currentUser = currentUserOpt.get();
@@ -110,7 +111,8 @@ public class UserService {
                 userFollowRepository.findByFollowerAndFollowing(currentUser, targetUser);
 
         if (existingFollow.isPresent()) {
-            throw new RuntimeException("Already following this user");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Already following this user");
         }
 
         UserFollowId userFollowId = new UserFollowId(currentUser.getId(), targetUser.getId());
@@ -129,7 +131,7 @@ public class UserService {
         Optional<User> targetUser = userRepository.findByUsername(username);
 
         if (targetUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         UserFollowId userFollowId = new UserFollowId(currentUser.getId(), targetUser.get().getId());
