@@ -1,9 +1,9 @@
 package com.example.realworld.model;
 
+import lombok.*;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.Embeddable;
-import lombok.*;
 
 @Embeddable
 @Getter

@@ -1,6 +1,7 @@
 package com.example.realworld.service;
 
 import com.example.realworld.dto.ProfileResponseDTO;
+import com.example.realworld.dto.RegistrationReqDTO;
 import com.example.realworld.dto.UpdateUserRequestDTO;
 import com.example.realworld.dto.UpdateUserResponseDTO;
 import com.example.realworld.model.User;
@@ -8,10 +9,14 @@ import com.example.realworld.model.UserFollow;
 import com.example.realworld.model.UserFollowId;
 import com.example.realworld.repository.UserFollowRepository;
 import com.example.realworld.repository.UserRepository;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.transaction.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,8 +35,15 @@ public class UserService {
         this.userFollowRepository = userFollowRepository;
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public User saveUser(RegistrationReqDTO registrationReqDto) {
+        String encodedPassword = passwordEncoder.encode(registrationReqDto.getPassword());
+
+        User newUser = new User();
+        newUser.setEmail(registrationReqDto.getEmail());
+        newUser.setUsername(registrationReqDto.getUsername());
+        newUser.setPassword(encodedPassword);
+
+        return userRepository.save(newUser);
     }
 
     @Transactional
@@ -132,5 +144,31 @@ public class UserService {
 
         return new ProfileResponseDTO(targetUser.get().getUsername(), targetUser.get().getBio(),
                 targetUser.get().getImage(), false);
+    }
+
+    public ResponseEntity<Map<String, Object>> getCurrentUserResponse(UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<User> userOptional = userRepository.findByUsername(userDetails.getUsername());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> userData = new HashMap<>();
+
+            userData.put("email", user.getEmail());
+            userData.put("username", user.getUsername());
+            userData.put("bio", user.getBio());
+            userData.put("image", user.getImage());
+
+            response.put("user", userData);
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 }

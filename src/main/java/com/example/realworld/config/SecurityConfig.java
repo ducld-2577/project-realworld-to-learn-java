@@ -28,8 +28,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-                .antMatchers("/api/user/register", "/api/user/login", "/api/profiles/**")
-                .permitAll().antMatchers(HttpMethod.GET, "/api/articles").permitAll()
+                .antMatchers("/api/user/register", "/api/user/login").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll().antMatchers("/api/**")
                 .hasRole("USER").anyRequest().authenticated().and().addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
