@@ -19,7 +19,8 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -34,12 +35,14 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
 
-        if (!passwordEncoder.matches(request.getUser().getPassword(), userOpt.get().getPassword())) {
+        if (!passwordEncoder.matches(request.getUser().getPassword(),
+                userOpt.get().getPassword())) {
             System.out.println("Password does not match.");
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
 
         String token = jwtService.generateToken(userOpt.get());
-        return ResponseEntity.ok(new LoginResponseDTO(new LoginResponseDTO.UserResponseDTO(userOpt.get().getEmail(), token)));
+        return ResponseEntity.ok(new LoginResponseDTO(
+                new LoginResponseDTO.UserResponseDTO(userOpt.get().getEmail(), token)));
     }
 }

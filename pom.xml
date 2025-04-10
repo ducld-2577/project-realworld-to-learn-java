@@ -31,6 +31,7 @@
 		<spring.boot.version>2.7.18</spring.boot.version>
 		<mysql.version>8.0.33</mysql.version>
 		<jjwt.version>0.11.5</jjwt.version>
+		<lombok.version>1.18.30</lombok.version>
 	</properties>
 
 	<dependencies>
@@ -87,6 +88,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

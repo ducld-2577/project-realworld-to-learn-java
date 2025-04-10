@@ -1,6 +1,7 @@
 package com.example.realworld.security;
 
 import com.example.realworld.service.JwtService;
+import com.example.realworld.service.JwtUserService;
 import com.example.realworld.service.UserService;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,25 +27,26 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserService userService;
+    private final JwtUserService jwtUserService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, JwtUserService jwtUserService) {
         this.jwtService = jwtService;
-        this.userService = userService;
+        this.jwtUserService = jwtUserService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+            FilterChain chain) throws ServletException, IOException {
         String token = extractJwtFromRequest(request);
 
         if (token != null && jwtService.validateToken(token)) {
             String email = jwtService.extractEmail(token);
 
-            UserDetails userDetails = userService.loadUserByUsername(email);
+            UserDetails userDetails = jwtUserService.loadUserByUsername(email);
             if (userDetails != null) {
                 Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-                Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
