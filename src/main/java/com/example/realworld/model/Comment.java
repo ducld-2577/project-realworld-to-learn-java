@@ -1,15 +1,29 @@
 package com.example.realworld.model;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "Comment")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String body;
+
+    @Column(name = "createdAt", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updatedAt", nullable = false, updatable = false)
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "articleId", nullable = false)
@@ -18,44 +32,4 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "authorId", nullable = false)
     private User author;
-
-    public Comment() {}
-
-    public Comment(String body, Article article, User author) {
-        this.body = body;
-        this.article = article;
-        this.author = author;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
-
-    public Article getArticle() {
-        return article;
-    }
-
-    public void setArticle(Article article) {
-        this.article = article;
-    }
-
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User author) {
-        this.author = author;
-    }
 }

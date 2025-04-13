@@ -60,6 +60,9 @@ public class Article {
         return favorites.stream().map(UserFavorite::getUser).collect(Collectors.toList());
     }
 
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
     public Article(String slug, String title, String description, String body, User author) {
         this.slug = slug;
         this.title = title;

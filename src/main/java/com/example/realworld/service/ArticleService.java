@@ -2,15 +2,16 @@ package com.example.realworld.service;
 
 import com.example.realworld.dto.ArticleDTO;
 import com.example.realworld.dto.ArticleListResponseDTO;
+import com.example.realworld.dto.CommentDTO;
+import com.example.realworld.dto.CommentListResponseDTO;
 import com.example.realworld.dto.UpdateArticleRequestDTO;
 import com.example.realworld.model.Article;
 import com.example.realworld.model.ArticleToTag;
+import com.example.realworld.model.Comment;
 import com.example.realworld.model.Tag;
 import com.example.realworld.model.User;
-import com.example.realworld.repository.ArticleRepository;
-import com.example.realworld.repository.TagRepository;
-import com.example.realworld.repository.UserRepository;
-import com.example.realworld.repository.UserFollowRepository;
+import com.example.realworld.model.UserFavorite;
+import com.example.realworld.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,9 @@ public class ArticleService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     public ArticleListResponseDTO getArticles(Optional<String> tag, Optional<String> author,
             Optional<String> favorited, Integer limit, Integer offset,
@@ -181,6 +185,121 @@ public class ArticleService {
         articleRepository.delete(article);
     }
 
+    @Transactional
+    public CommentDTO addComment(String slug, CommentDTO commentDTO,
+            Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName()).orElse(null);
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+
+        Article article = articleRepository.findBySlug(slug);
+        if (article == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article is not found");
+        }
+
+        Comment comment = new Comment();
+        comment.setBody(commentDTO.getBody());
+        comment.setArticle(article);
+        comment.setAuthor(currentUser);
+        entityManager.persist(comment);
+
+        return commentDTO;
+    }
+
+    public CommentListResponseDTO getComments(String slug, Authentication authentication) {
+        Article article = articleRepository.findBySlug(slug);
+        if (article == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article is not found");
+        }
+
+        Optional<User> currentUserOpt = Optional.empty();
+        if (authentication != null && authentication.isAuthenticated()) {
+            currentUserOpt = userRepository.findByUsername(authentication.getName());
+        }
+        final Optional<User> currentUser = currentUserOpt;
+
+        List<Comment> comments = article.getComments();
+        List<CommentDTO> commentDTOList =
+                comments.stream().map(comment -> convertToCommentDTO(comment, currentUser))
+                        .collect(Collectors.toList());
+
+        return new CommentListResponseDTO(commentDTOList);
+    }
+
+    @Transactional
+    public void deleteComment(String slug, Long id, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName()).orElse(null);
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+
+        Article article = articleRepository.findBySlug(slug);
+        if (article == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article is not found");
+        }
+
+        Comment comment = commentRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        if (!comment.getAuthor().equals(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You are not the author of this comment");
+        }
+
+        entityManager.remove(comment);
+        entityManager.flush();
+    }
+
+    public ArticleDTO favoriteArticle(String slug, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "User is not authenticated"));
+
+        Article article = articleRepository.findBySlug(slug);
+        if (article == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article is not found");
+        }
+
+        boolean alreadyFavorited = article.getFavorites().stream()
+                .anyMatch(fav -> fav.getUser().getId().equals(currentUser.getId()));
+
+        if (alreadyFavorited) {
+            return convertToDTO(article, currentUser);
+        }
+
+        UserFavorite userFavorite = new UserFavorite(currentUser, article);
+
+        article.getFavorites().add(userFavorite);
+
+        articleRepository.save(article);
+
+        return convertToDTO(article, currentUser);
+    }
+
+    @Transactional
+    public ArticleDTO unfavoriteArticle(String slug, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "User is not authenticated"));
+
+        Article article = articleRepository.findBySlug(slug);
+        if (article == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article is not found");
+        }
+
+        UserFavorite userFavorite = article.getFavorites().stream()
+                .filter(fav -> fav.getUser().getId().equals(currentUser.getId())).findFirst()
+                .orElse(null);
+
+        if (userFavorite != null) {
+            article.getFavorites().remove(userFavorite);
+            entityManager.remove(userFavorite);
+        }
+
+        return convertToDTO(article, currentUser);
+    }
+
     private ArticleDTO convertToDTO(Article article, User currentUser) {
         ArticleDTO dto = new ArticleDTO();
         dto.setSlug(article.getSlug());
@@ -205,6 +324,30 @@ public class ArticleService {
         if (currentUser != null) {
             boolean isFollowing = userFollowRepository.existsByFollowerAndFollowing(currentUser,
                     article.getAuthor());
+            authorDTO.setFollowing(isFollowing);
+        } else {
+            authorDTO.setFollowing(false);
+        }
+
+        dto.setAuthor(authorDTO);
+        return dto;
+    }
+
+    private CommentDTO convertToCommentDTO(Comment comment, Optional<User> currentUser) {
+        CommentDTO dto = new CommentDTO();
+        dto.setId(comment.getId());
+        dto.setBody(comment.getBody());
+        dto.setCreatedAt(comment.getCreatedAt().toString());
+        dto.setUpdatedAt(comment.getUpdatedAt().toString());
+
+        CommentDTO.AuthorDTO authorDTO = new CommentDTO.AuthorDTO();
+        authorDTO.setUsername(comment.getAuthor().getUsername());
+        authorDTO.setBio(comment.getAuthor().getBio());
+        authorDTO.setImage(comment.getAuthor().getImage());
+
+        if (currentUser.isPresent()) {
+            boolean isFollowing = userFollowRepository
+                    .existsByFollowerAndFollowing(currentUser.get(), comment.getAuthor());
             authorDTO.setFollowing(isFollowing);
         } else {
             authorDTO.setFollowing(false);
