@@ -139,7 +139,7 @@ public class UserService {
         if (existingFollow.isPresent()) {
             userFollowRepository.delete(existingFollow.get());
         } else {
-            return null;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not following");
         }
 
         return new ProfileResponseDTO(targetUser.get().getUsername(), targetUser.get().getBio(),

@@ -32,4 +32,15 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "authorId", nullable = false)
     private User author;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

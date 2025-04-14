@@ -204,6 +204,15 @@ public class ArticleService {
         comment.setAuthor(currentUser);
         entityManager.persist(comment);
 
+        commentDTO.setId(comment.getId());
+        commentDTO.setCreatedAt(comment.getCreatedAt().toString());
+        commentDTO.setUpdatedAt(comment.getUpdatedAt().toString());
+        CommentDTO.AuthorDTO authorDTO = new CommentDTO.AuthorDTO();
+        authorDTO.setUsername(currentUser.getUsername());
+        authorDTO.setBio(currentUser.getBio());
+        authorDTO.setImage(currentUser.getImage());
+        commentDTO.setAuthor(authorDTO);
+
         return commentDTO;
     }
 
