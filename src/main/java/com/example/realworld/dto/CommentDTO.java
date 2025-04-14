@@ -1,5 +1,7 @@
 package com.example.realworld.dto;
 
+import javax.validation.constraints.NotBlank;
+
 import lombok.*;
 
 @Getter
@@ -7,19 +9,23 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateUserRequestDTO {
-    private UserDTO user;
+public class CommentDTO {
+    private Long id;
+    @NotBlank
+    private String body;
+    private String createdAt;
+    private String updatedAt;
+    private AuthorDTO author;
 
     @Getter
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class UserDTO {
-        private String email;
+    public static class AuthorDTO {
         private String username;
-        private String password;
         private String bio;
         private String image;
+        private boolean following;
     }
 }

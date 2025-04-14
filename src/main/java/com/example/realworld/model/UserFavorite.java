@@ -30,28 +30,4 @@ public class UserFavorite {
         this.article = article;
         this.id = new UserFavoritesId(user.getId(), article.getId());
     }
-
-    public Article getArticle() {
-        return article;
-    }
-
-    public void setArticle(Article article) {
-        this.article = article;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public UserFavoritesId getId() {
-        return id;
-    }
-
-    public void setId(UserFavoritesId id) {
-        this.id = id;
-    }
 }
