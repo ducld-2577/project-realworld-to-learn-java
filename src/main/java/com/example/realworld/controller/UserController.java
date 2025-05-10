@@ -1,6 +1,9 @@
 package com.example.realworld.controller;
 
+import com.example.realworld.dto.LoginResponseDTO.UserResponseDTO;
 import com.example.realworld.dto.RegistrationReqDTO;
+import com.example.realworld.dto.UpdateUserRequestDTO;
+import com.example.realworld.dto.UpdateUserResponseDTO;
 import com.example.realworld.model.User;
 import com.example.realworld.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/user")
@@ -33,5 +37,11 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails) {
 
         return userService.getCurrentUserResponse(userDetails);
+    }
+
+    @PutMapping()
+    public ResponseEntity<UpdateUserResponseDTO> updateUser(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UpdateUserRequestDTO request) {
+        UpdateUserResponseDTO updatedUser = userService.updateUser(userDetails.getUsername(), request);
+        return ResponseEntity.ok(updatedUser);
     }
 }
